@@ -1,3 +1,7 @@
+# Student Identification
+Name: Matthew Drew
+Student ID: 35575125
+
 # f1-telemetry-dashboard-project
 Analyze data from F1 events.
 
