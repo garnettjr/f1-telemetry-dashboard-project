@@ -2,10 +2,12 @@ import fastf1
 import matplotlib.pyplot as plt
 import fastf1.plotting
 from timple.timedelta import strftimedelta
+import pandas as pd
 
-driver1 = input("Select first driver(THREE LETTER ABBREVIATION): ")
-driver2 = input("Select second driver(THREE LETTER ABBREVIATION): ")
 year = int(input("Select a year 2018-now inclusive: "))
+events = fastf1.get_event_schedule(year, include_testing = False)
+print("select an event from these: ")
+print(events[['EventName', 'Location']])
 gp = input("Select a race event: ")
 sess = input("Select a session FP1 FP2 FP3 Q R: ")
 
@@ -13,6 +15,12 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=True, misc_mpl_mods=False, color
 session = fastf1.get_session(year, gp, sess)
 session.load()
 circuit_info = session.get_circuit_info()
+
+drivers = pd.unique(session.laps['Driver'])
+print("Select which drivers to compare out of these:")
+print(drivers)
+driver1 = input("Select first driver(THREE LETTER ABBREVIATION): ")
+driver2 = input("Select second driver(THREE LETTER ABBREVIATION): ")
 
 driv1_lap = session.laps.pick_drivers(driver1).pick_fastest()
 driv2_lap = session.laps.pick_drivers(driver2).pick_fastest()
