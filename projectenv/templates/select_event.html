@@ -1,0 +1,16 @@
+<form method="POST" action="/results">
+    <input type="hidden" name="year" value="{{ year }}">
+    <select name="event" required>
+        {% for event in events %}
+        <option value="{{ event }}">{{ event }}</option>
+        {% endfor %}
+    </select>
+    <select name="session" required>
+        <option value="FP1">FP1</option>
+        <option value="FP2">FP2</option>
+        <option value="FP3">FP3</option>
+        <option value="Q">Q</option>
+        <option value="R">R</option>
+    </select>
+    <input type="submit" value="Get Results">
+</form>
