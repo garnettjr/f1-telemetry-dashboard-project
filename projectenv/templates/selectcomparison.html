@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>pickdrivers</title>
+  </head>
+<body>
+<form method="POST" action="/generate_comparison">
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="gp" value="{{ gp }}">  
+  <input type="hidden" name="sess" value="{{ sess}}">
+  <h2>Select driver 1</h2> 
+    <select name="driver1" required>
+        {% for driver in drivers %}
+        <option value="{{ driver }}">{{ driver }}</option>
+        {% endfor %}
+    </select>
+<h2>Select driver 2</h2>
+    <select name="driver2" required>
+        {% for driver in drivers %}
+        <option value="{{ driver }}">{{ driver }}</option>
+        {% endfor %}
+    </select>
+<h2></h2>
+  <input type="submit" value="Get Results">
+</form>
+</body>
+</html>
