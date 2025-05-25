@@ -174,7 +174,7 @@ fastest_laps = Laps(list_fastest_laps) \
     .reset_index(drop=True)
 ```
 
-- print that list into the console:
+- Print that list into the console:
 
 ```
 print(fastest_laps[['Driver', 'LapTime']])
@@ -188,8 +188,225 @@ fastest_laps[['Driver', 'LapTime']].to_csv('fastestlaps.csv', index=False)
 
 - This creates a csv file with the fastest laps inside it. The index=False makes the list cleaner by removing the index of each driver from the output.
 
+# Flask application
+- This was one of the more difficult parts of the project as I had to learn multiple different things like routing the backend and variables passing through the different routes. 
+- Import the libraries:
 
+```
+from flask import Flask, render_template, request, send_file, url_for
+from io import BytesIO
+import fastf1
+import pandas as pd
+from fastf1.core import Laps
+import matplotlib
+matplotlib.use('Agg') 
+import matplotlib.pyplot as plt
+from timple.timedelta import strftimedelta
+import fastf1.plotting
+import base64
+```
 
+- You should notice some new libaries for the backend. Matplotlib use 'Agg' allows us to put the graph onto webpage instead of just locally, base64 and BytesIO are for the csv download and putting the graph into html. 
+
+- Create an instance of Flask so it knows where to look for templates and static files:
+
+```
+app = Flask(__name__)
+```
+
+- Enable caching into a directory:
+
+```
+fastf1.Cache.enable_cache('<directory of choice>') 
+```
+
+- First route is the page we see when we visit the webpage, this is a 'GET' request, because of this we include this in our methods and have a html template for when the method used to access this route is a 'GET'. 
+
+```
+@app.route('/', methods=['GET', 'POST'])
+def landing(): #landing page
+    if request.method == 'POST':
+        choice = request.form['choice']
+        if choice == 'compare':
+            return render_template('yearcompare.html')#gets year for comparing inside and passes foward
+        elif choice == 'download': 
+            return render_template('index.html')
+    return render_template('landing.html')
+```
+
+- as you see the landing page is what the user will see first, then when an option is selected it becomes a 'POST' method. The selection is stored in a variable and an if statement is used to route correctly to the next page.
+
+- From the first page, the year the user wants to use is passed through to the next route, which for either choice is the same but lead to different places:
+
+```
+@app.route('/select_event', methods=['POST']) #getting event for fastests laps
+def index(): 
+    if request.method == 'POST':
+        year = request.form['year']
+        events = fastf1.get_event_schedule(int(year), include_testing=False)
+        event_names = events['EventName'].tolist()
+        return render_template('select_event.html', events=event_names, year=year)
+
+@app.route('/comparelaps', methods=['POST'])#gets event for comparing laps
+def comparelaps():
+    if request.method == 'POST':
+        year = request.form['year']
+        events = fastf1.get_event_schedule(int(year), include_testing=False)
+        event_names = events['EventName'].tolist()
+        return render_template('compare_laps.html', events=event_names, year=year)
+```
+
+- This is where the user selects the event and session from the year, looking now it could definitly be improved into one route.
+
+- If the user chose to download the fastest lap csv, then the next step is displaying the table of fastest laps:
+
+```
+@app.route('/results', methods=['POST']) #creating fastest laps table
+def results():
+    year = request.form['year']
+    gp = request.form['event']
+    sess = request.form['session']
+    
+    
+    session = fastf1.get_session(int(year), gp, sess)
+    session.load()
+    
+    
+    drivers = pd.unique(session.laps['Driver'])
+    fastest_laps = Laps([session.laps.pick_drivers(drv).pick_fastest() for drv in drivers]) \
+        .sort_values(by='LapTime').reset_index(drop=True)
+    
+    
+    html_table = fastest_laps[['Driver', 'LapTime']].to_html(index=False)
+    download_url = url_for('download_csv', year=year, gp=gp, sess=sess)
+    
+    return render_template('results.html', table=html_table, download_url=download_url, event=session.event['EventName'], sess=sess)
+```
+
+- As you can see this is very similar to the console script that was made excpet used in a flask application. As it will be hosted on a weak AWS instance, instead of making two lists for laps I made one to save some memory. The table is served to the frontend with a url attached to activate the download button.
+
+- Download csv route:
+
+```
+@app.route('/download_csv')
+def download_csv():
+    year = request.args.get('year')
+    gp = request.args.get('gp')
+    sess = request.args.get('sess')
+    
+    session = fastf1.get_session(int(year), gp, sess)
+    session.load()
+    
+    drivers = pd.unique(session.laps['Driver'])
+    fastest_laps = Laps([session.laps.pick_drivers(drv).pick_fastest() for drv in drivers]) \
+        .sort_values(by='LapTime').reset_index(drop=True)
+    
+    csv = BytesIO()
+    fastest_laps[['Driver', 'LapTime']].to_csv(csv, index=False)
+    csv.seek(0)
+    
+    return send_file(
+        csv,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='fastestlaps.csv'
+    )
+```
+
+- This is the same as the previous route except now we save the table into a csv file in memory, name the file and the user can download it. Similar to the previous routes there is definitely room for improvement here, but this was the solution at the time.
+
+- If comparing laps was chosen this is the next step, create a list of drivers from the session, serve it to the frontend and let the user choose:
+
+```
+@app.route('/selectcomparison', methods=['POST'])#
+def selectcomparison():
+    if request.method == 'POST':
+        year = request.form['year']
+        gp = request.form['event']
+        sess = request.form['session']
+        
+        session = fastf1.get_session(int(year), gp, sess)
+        session.load()
+        drivers = pd.unique(session.laps['Driver'])
+        
+        return render_template('selectcomparison.html', drivers=drivers, year=year, gp=gp, sess=sess)
+```
+
+- Now for displaying the graph on the webpage:
+
+```
+@app.route('/generate_comparison', methods=['POST'])#creating comparison table
+def generate_comparison():
+    year = request.form['year']
+    gp = request.form['gp']
+    sess = request.form['sess']
+    driver1 = request.form['driver1']
+    driver2 = request.form['driver2']
+    fastf1.plotting.setup_mpl(mpl_timedelta_support=True, misc_mpl_mods=False, color_scheme='fastf1')
+    session = fastf1.get_session(int(year), gp, sess)
+    session.load()
+    circuit_info = session.get_circuit_info()#getting circuit for corner numbers
+    driv1_lap = session.laps.pick_drivers(driver1).pick_fastest()#drivers fastest laps
+    driv2_lap = session.laps.pick_drivers(driver2).pick_fastest()
+        
+    
+    driv1_tel = driv1_lap.get_car_data().add_distance()#getting lap with distance for table
+    driv2_tel = driv2_lap.get_car_data().add_distance()
+        
+        
+    drv1_color = fastf1.plotting.get_team_color(driv1_lap['Team'], session=session)
+    drv2_color = fastf1.plotting.get_team_color(driv2_lap['Team'], session=session)
+        
+        
+    lap_time_string = strftimedelta(driv1_lap['LapTime'], '%m:%s.%ms')#total laptime of both 
+    lap_time_string2 = strftimedelta(driv2_lap['LapTime'], '%m:%s.%ms')
+
+        
+    fig, ax = plt.subplots()#make the plot
+    ax.plot(driv1_tel['Distance'], driv1_tel['Speed'], color=drv1_color, label=driver1)
+    ax.plot(driv2_tel['Distance'], driv2_tel['Speed'], color=drv2_color, label=driver2)
+        
+        
+    v_min = driv1_tel['Speed'].min()
+    v_max = driv1_tel['Speed'].max()
+    ax.vlines(x=circuit_info.corners['Distance'], ymin=v_min-20, ymax=v_max+20, linestyles='dotted', colors='grey')
+        
+    for _, corner in circuit_info.corners.iterrows():#corner numbers
+        txt = f"{corner['Number']}{corner['Letter']}"
+        ax.text(corner['Distance'], v_min-30, txt, va='center_baseline', ha='center', size='small')
+
+        
+        ax.set_xlabel('Distance in m')
+        ax.set_ylabel('Speed in km/h')
+        ax.legend()
+        plt.suptitle(f"Fastest Lap Comparison \n "
+                    f"{session.event['EventName']} {session.event.year} {sess}\n"
+                    f"{driver1} lap is {lap_time_string} {driver2} lap is {lap_time_string2}")
+        
+    img_buffer = BytesIO()
+    plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
+    img_buffer.seek(0)
+    plt.close(fig)
+        
+        
+    img = base64.b64encode(img_buffer.getvalue()).decode('utf-8')#put into html
+        
+    return render_template('comparison_result.html', img=img, driver1=driver1, driver2=driver2, event_name=session.event['EventName'], year=year, sess=sess, gp=gp)
+```
+
+- Again this is the same as the script except we use bytesIO to save the image and then base64 to embedd into html, it all gets passed to the frontend as variable parameters. 
+
+- In order to have the app run we need:
+
+```
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+- If you would like you can change what port it runs on in the parameters here. The defualt is 5000. 
+
+# IMPORTANT Flask information
+- HTML templates need to be in a folder called templates in the same directory as your flask application, also if any static files are used they need to be in a folder called static in the same directory as your application. Names can be changed as long as you change the path accordingly, but for good practice use these. 
 
 
 

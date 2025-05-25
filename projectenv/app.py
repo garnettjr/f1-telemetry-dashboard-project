@@ -23,7 +23,7 @@ def landing(): #landing page
             return render_template('index.html')
     return render_template('landing.html')
 
-@app.route('/select_event', methods=['POST']) #getting year for fastests laps
+@app.route('/select_event', methods=['POST']) #getting event for fastests laps
 def index(): 
     if request.method == 'POST':
         year = request.form['year']
@@ -31,7 +31,7 @@ def index():
         event_names = events['EventName'].tolist()
         return render_template('select_event.html', events=event_names, year=year)
     
-@app.route('/results', methods=['POST']) #getting event and session for fastest laps table
+@app.route('/results', methods=['POST']) #creating fastest laps table
 def results():
     year = request.form['year']
     gp = request.form['event']
@@ -65,12 +65,12 @@ def download_csv():
     fastest_laps = Laps([session.laps.pick_drivers(drv).pick_fastest() for drv in drivers]) \
         .sort_values(by='LapTime').reset_index(drop=True)
     
-    csv_buffer = BytesIO()
-    fastest_laps[['Driver', 'LapTime']].to_csv(csv_buffer, index=False)
-    csv_buffer.seek(0)
+    csv = BytesIO()
+    fastest_laps[['Driver', 'LapTime']].to_csv(csv, index=False)
+    csv.seek(0)
     
     return send_file(
-        csv_buffer,
+        csv,
         mimetype='text/csv',
         as_attachment=True,
         download_name='fastestlaps.csv'
