@@ -147,14 +147,14 @@ def generate_comparison():
 
         
     img_buffer = BytesIO()
-    plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=175)
+    plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
     img_buffer.seek(0)
     plt.close(fig)
         
         
-    img_data = base64.b64encode(img_buffer.getvalue()).decode('utf-8')#put into html
+    img = base64.b64encode(img_buffer.getvalue()).decode('utf-8')#put into html
         
-    return render_template('comparison_result.html', img_data=img_data, driver1=driver1, driver2=driver2, event_name=session.event['EventName'], year=year, sess=sess, gp=gp)
+    return render_template('comparison_result.html', img=img, driver1=driver1, driver2=driver2, event_name=session.event['EventName'], year=year, sess=sess, gp=gp)
 
 
 if __name__ == '__main__':
