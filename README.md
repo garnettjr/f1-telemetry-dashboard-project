@@ -23,18 +23,16 @@ Analyze data from F1 events.
 ```
 python -m venv <directory you want>
 ```
+- then activate the environment:
 
+```
+source bin/activate
+```
 - Once your virtual environment is created we need to install the dependencies:
 
 ```
 pip install fastf1
 pip install Flask
-```
-
-- then activate the environment:
-
-```
-source bin/activate
 ```
 
 - this should cover everything but if you encounter errors when building just install remaining dependencies manually.
