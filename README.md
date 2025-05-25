@@ -38,7 +38,7 @@ pip install Flask
 - this should cover everything but if you encounter errors when building just install remaining dependencies manually.
 
 # First Script
-- The first script is a console based application and was built to learn the api and python simultaneously as I had no prior experience with either. In order to learn the api and how to use the correct functions I followed some of the examples from Fastf1 and changed it to do what I wanted.
+- The first script is a console based application and was built to learn the api and python simultaneously as I had no prior experience with either. In order to learn the api and how to use the correct functions I followed some of the examples from Fastf1 and changed it to do what I wanted. Used to compare two drivers laps againnst each other.
 - Import the libraries:
 
 ```
@@ -126,16 +126,67 @@ plt.suptitle(f"Fastest Lap Comparison\n "
 plt.show()
 ```
 
+# Second Script
+-This script is for downloading the fastests laps of all drivers from a session chosen by the user. It's another console based application. From the knowledge gained making the last script this one was much easier.
+- Import the libraries:
 
+```
+import fastf1
+from fastf1.core import Laps
+import pandas as pd
+```
 
+- Next we get the choices of what session the user wants to use:
 
+```
+year = int(input("Select a year 2018-now inclusive: "))
+events = fastf1.get_event_schedule(year, include_testing = False)
+print("select an event from these: ")
+print(events[['EventName', 'Location']])
+gp = input("Select a race event: ")
+sess = input("Select a session FP1 FP2 FP3 Q R: ")
 
+```
 
+- Then load the session with the paramters chosen by the user:
 
+```
+session = fastf1.get_session(year, gp, sess)
+session.load()
+```
 
+- Create a list of all the drivers in that session and print it:
 
+```
+drivers = pd.unique(session.laps['Driver'])
+print(drivers)
+```
 
+- Create a list of the fastest laps, then use a for loop to iterate through the drivers laps, append that lap to the list and then make a list with the ordered laps from fastest to slowest:
 
+```
+list_fastest_laps = list()
+for drv in drivers:
+    drvs_fastest_lap = session.laps.pick_drivers(drv).pick_fastest()
+    list_fastest_laps.append(drvs_fastest_lap)
+fastest_laps = Laps(list_fastest_laps) \
+    .sort_values(by='LapTime') \
+    .reset_index(drop=True)
+```
+
+- print that list into the console:
+
+```
+print(fastest_laps[['Driver', 'LapTime']])
+```
+
+- Finally the main part of this script:
+
+```
+fastest_laps[['Driver', 'LapTime']].to_csv('fastestlaps.csv', index=False)
+```
+
+- This creates a csv file with the fastest laps inside it. The index=False makes the list cleaner by removing the index of each driver from the output.
 
 
 
