@@ -408,5 +408,20 @@ if __name__ == '__main__':
 # IMPORTANT Flask information
 - HTML templates need to be in a folder called templates in the same directory as your flask application, also if any static files are used they need to be in a folder called static in the same directory as your application. Names can be changed as long as you change the path accordingly, but for good practice use these. 
 
+# Webpage Visuals Documentation
+- As I didn't use wordpress or anything similar, I made the webpage from scratch, using html and bootstrap css.
 
+- All of the html pages I used are in the templates folder of this repository and the images for the pages are in the static folder.
 
+- Using bootstrap you need to include this at the top: 
+
+```
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+```
+
+- and this at the bottom
+
+```
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+```
+- The link comes just before the styling of the webpage and the script is included in the body tags of the html, these allow you to use boostraps classes. You can use the html pages I made, modify them or completly make your own.
