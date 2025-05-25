@@ -37,9 +37,9 @@ lap_time_string2 = strftimedelta(driv2_lap['LapTime'], '%m:%s.%ms')
 fig, ax = plt.subplots()
 ax.plot(driv1_tel['Distance'], driv1_tel['Speed'], color=drv1_color, label=driver1)
 ax.plot(driv2_tel['Distance'], driv2_tel['Speed'], color=drv2_color, label=driver2)
+
 v_min = driv1_tel['Speed'].min()
 v_max = driv1_tel['Speed'].max()
-
 ax.vlines(x=circuit_info.corners['Distance'], ymin=v_min-20, ymax=v_max+20,
           linestyles='dotted', colors='grey')
 
@@ -52,7 +52,7 @@ ax.set_xlabel('Distance in m')
 ax.set_ylabel('Speed in km/h')
 
 ax.legend()
-plt.suptitle(f"Fastest Lap Comparison \n "
+plt.suptitle(f"Fastest Lap Comparison\n "
              f"{session.event['EventName']} {session.event.year} {sess}\n"f"{driver1} lap is {lap_time_string}\n{driver2} lap is {lap_time_string2}")
 
 plt.show()
