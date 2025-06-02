@@ -15,6 +15,7 @@ Analyze data from F1 events.
 - Flask
 - Pandas
 - Gunicorn
+- Nginx
 
 # Setup
 - Before doing anything else make sure you have python installed and a text editor of your choice.
