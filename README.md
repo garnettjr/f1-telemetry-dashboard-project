@@ -425,3 +425,42 @@ if __name__ == '__main__':
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 ```
 - The link comes just before the styling of the webpage and the script is included in the body tags of the html, these allow you to use boostraps classes. You can use the html pages I made, modify them or completly make your own.
+
+- all of my templates will have something like this in them
+
+```
+<style>
+        body {
+          padding: 20px;
+          background-image: url("{{url_for('static', filename='f1mon.png')}}");
+          background-size: cover;
+          background-attachment: fixed;
+        }
+        .container {
+          max-width: 500px;
+          margin-top: 10px;
+        }
+        h1 {
+          margin-bottom: 10px;
+          text-align: center;
+          color: black;
+        }
+        .form-select {
+          margin-bottom: 20px;
+        }
+    </style>
+```
+
+- These are classes you make to then use on the webpage. It makes up the visual styling of the webpage. Body is just the main part of the webpage, use it to control things like the bakcground. Container is the main area on the webpage that displays the text and has the button in it. Changing the value of px you can change the size of each part. Bootstrap also comes with classes pre made for you to use straight away, like the button preset I used. When you have "." infront of the name you use it as a class, otherwise its styling. 
+
+```
+<body>
+    <div class="container">
+        <div class="card shadow">
+            <div class="card-body">
+                <h1 class="card-title">Select Event</h1>
+```
+
+- in order to use these classes you put them inside a "div" tag, as seen above. 
+
+- you can see I've used the container class to hold everything below it, the styling of h1 with also be used as I'm using the tag.
