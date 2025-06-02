@@ -14,6 +14,7 @@ Analyze data from F1 events.
 - Matplolib
 - Flask
 - Pandas
+- Gunicorn
 
 # Setup
 - Before doing anything else make sure you have python installed and a text editor of your choice.
