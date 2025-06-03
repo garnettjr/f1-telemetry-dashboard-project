@@ -520,7 +520,7 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-- now visit you webpage at <your-server-ip>
+- now visit your webpage at <your-server-ip>
 
 - you may get a 502 bad gateway error which means gunicorn isn't running
 - to fix run:
