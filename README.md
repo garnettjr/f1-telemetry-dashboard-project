@@ -466,3 +466,127 @@ if __name__ == '__main__':
 - in order to use these classes you put them inside a "div" tag, as seen above. 
 
 - you can see I've used the container class to hold everything below it, the styling of h1 with also be used as I'm using the tag.
+
+# Deploying webserver to aws instance
+- make sure ports 80, 443, and 5000 are open in your aws instance
+- in virtual environment run:
+
+```
+pip install gunicorn
+```
+
+- then:
+
+```
+sudo apt install nginx -y
+```
+
+- run gunicorn to test app:
+
+```
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
+
+- test it at your-server-ip:5000
+
+# Setup nginx
+
+- create a config file:
+
+```
+sudo vi /etc/nginx/sites-available/f1-telemetry
+```
+
+- paste this in, change <your-server-ip>:
+
+```
+server {
+    listen 80;
+    server_name <your-server-ip>;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+- enable the site using a symlink, run:
+
+```
+sudo ln -s /etc/nginx/sites-available/f1-telemetry-dashboard-project /etc/nginx/sites-enabled
+sudo nginx -t       
+sudo systemctl restart nginx
+```
+
+- now visit you webpage at <your-server-ip>
+
+- you may get a 502 bad gateway error which means gunicorn isn't running
+- to fix run:
+
+```
+screen -S gunicorn
+gunicorn -w 4 -b 127.0.0.1:5000 app:app
+```
+
+- this creates a detached screen, then you enable gunicorn, to detach from the screen press CTRL+A and then D, then restart nginx
+
+# Adding SSL 
+
+- create an elastic ip and point to it with your domain usng an A record
+- install certbot:
+
+```
+sudo apt install certbot python3-certbot-nginx -y
+```
+
+- run certbot with nginx:
+
+```
+sudo certbot --nginx -d yourdomain.com
+```
+
+- follow the steps it shows and choose option  2 
+
+- should get a response to say certificate recieved
+ 
+- now to update enginx config
+
+- access config file we made eariler and add this:
+
+```
+server {
+    listen 443 ssl;
+    server_name yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+server {
+    listen 80;
+    server_name yourdomain.com;
+    return 301 https://$host$request_uri;
+}
+```
+
+- restart nginx
+
+- visit your domain and there should be a padlock in the browser
+
+- you can verify the SSL with:
+
+```
+sudo certbot certificates
+```
+
+- will display domain and the expiration date
+
+
