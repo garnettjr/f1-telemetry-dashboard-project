@@ -547,8 +547,6 @@ sudo apt install certbot python3-certbot-nginx -y
 sudo certbot --nginx -d yourdomain.com
 ```
 
-- follow the steps it shows and choose option  2 
-
 - should get a response to say certificate recieved
  
 - now to update enginx config
