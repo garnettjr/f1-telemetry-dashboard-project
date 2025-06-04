@@ -39,6 +39,8 @@ pip install Flask
 
 - this should cover everything but if you encounter errors when building just install remaining dependencies manually.
 
+- if you are installing an instance, or don't want to manually make the scripts, just clone this repository and move the files into your virtual environment.
+
 # First Script
 - The first script is a console based application and was built to learn the api and python simultaneously as I had no prior experience with either. In order to learn the api and how to use the correct functions I followed some of the examples from Fastf1 and changed it to do what I wanted. Used to compare two drivers laps againnst each other.
 - Import the libraries:
