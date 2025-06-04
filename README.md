@@ -577,6 +577,18 @@ server {
 }
 ```
 
+- after this the config file we made will not be used so we need to remove the default config and create a symlink again:
+
+```
+sudo rm /etc/nginx/sites-enabled/default
+```
+
+```
+sudo ln -sf /etc/nginx/sites-available/f1-telemetry /etc/nginx/sites-enabled/
+sudo nginx -t              
+sudo systemctl restart nginx
+```
+
 - restart nginx
 
 - visit your domain and there should be a padlock in the browser
