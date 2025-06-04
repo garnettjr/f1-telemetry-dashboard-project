@@ -515,12 +515,12 @@ server {
 - enable the site using a symlink, run:
 
 ```
-sudo ln -s /etc/nginx/sites-available/f1-telemetry-dashboard-project /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/f1-telemetry /etc/nginx/sites-enabled
 sudo nginx -t       
 sudo systemctl restart nginx
 ```
 
-- now visit your webpage at <your-server-ip>
+- now visit your webpage at your-server-ip
 
 - you may get a 502 bad gateway error which means gunicorn isn't running
 - to fix run:
